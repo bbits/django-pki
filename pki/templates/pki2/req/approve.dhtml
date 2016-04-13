@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls admin_static admin_list tz %}
+
+{% if not is_popup %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=meta.app_label %}">{{ meta.app_label|capfirst|escape }}</a>
+&rsaquo; <a href="{% url 'admin:pki2_signingrequest_changelist' %}">{{ meta.verbose_name_plural|capfirst }}</a>
+&rsaquo; Approve signing request {{ signingrequest.pk }}
+</div>
+{% endblock %}
+{% endif %}
+
+{% block content %}
+{% localtime on %}
+<table>
+    <tr><th>Requested at</th><td>{{ signingrequest.created_at }}</td></tr>
+    <tr><th>Entity</th><td><a href="{% url "admin:pki2_entity_change" signingrequest.entity.pk %}">{{ signingrequest.entity }}</a></td></tr>
+    <tr>
+        <th>Issuer</th>
+        <td>
+            {% if signingrequest.entity.issuer %}
+            <a href="{% url "admin:pki2_authority_change" signingrequest.entity.issuer.pk %}">{{ signingrequest.entity.issuer }}</a>
+            {% else %}
+            self
+            {% endif %}
+        </td>
+    </tr>
+    <tr><th>Key</th><td>{{ signingrequest.public_key.algorithm }}</td></tr>
+    <tr><th>Days</th><td>{{ signingrequest.days }}</td></tr>
+    <tr><th>Emails</th><td>{{ signingrequest.emails|join:", " }}</td></tr>
+    <tr><th>Domains</th><td>{{ signingrequest.domains|join:", " }}</td></tr>
+    <tr><th>IPs</th><td>{{ signingrequest.ips|join:", " }}</td></tr>
+    <tr><th>Message</th><td>{{ signingrequest.message }}</td></tr>
+</table>
+{% endlocaltime %}
+<br />
+<form method="POST">
+{% csrf_token %}
+<p>To issue this certificate, enter the password for the {{ signingrequest.entity.issuer }} key:
+{{ form.password }} <input type="submit" value="Issue"></p>
+{% endblock content %}

@@ -1,0 +1,36 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls admin_static admin_list tz %}
+
+{% if not is_popup %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=meta.app_label %}">{{ meta.app_label|capfirst|escape }}</a>
+&rsaquo; <a href="{% url 'admin:pki2_signingrequest_changelist' %}">{{ meta.verbose_name_plural|capfirst }}</a>
+&rsaquo; Renew Entity {{ entity.pk }}
+</div>
+{% endblock %}
+{% endif %}
+
+{% block content %}
+{% localtime on %}
+<form method="POST">
+<table>
+    <tr><th>DN</th><td>{{ entity.dn }}</td></tr>
+    <tr>
+        <th>Issuer</th>
+        <td>
+            {% if entity.issuer %}
+            <a href="{% url "admin:pki2_authority_change" entity.issuer.pk %}">{{ entity.issuer }}</a>
+            {% else %}
+            self
+            {% endif %}
+        </td>
+    </tr>
+    {{ form.as_table }}
+</table>
+{% endlocaltime %}
+<br />
+{% csrf_token %}
+<input type="submit" value="Renew"></p>
+{% endblock content %}
